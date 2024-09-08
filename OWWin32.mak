@@ -20,11 +20,11 @@ WIN=1
 
 # Open Watcom root directory
 !ifndef WATCOM
-WATCOM = \Watcom
+WATCOM = $(%WATCOM)
 !endif
 # if a DOS version is to be created, HXDIR must contain the HX root directory
 !ifndef HXDIR
-HXDIR = \HX
+HXDIR = /HX
 !endif
 
 !ifndef DEBUG
@@ -38,7 +38,7 @@ DJGPP=1
 !endif
 
 # to track memory leaks, the Open Watcom TRMEM module can be included.
-# it's useful only if FASTMEM=0 is set, though, otherwise most allocs 
+# it's useful only if FASTMEM=0 is set, though, otherwise most allocs
 # won't use the C heap.
 !ifndef TRMEM
 TRMEM=0
@@ -46,22 +46,22 @@ TRMEM=0
 
 !ifndef OUTD
 !if $(DEBUG)
-OUTD=Build\Debug
+OUTD=build/Debug
 !else
-OUTD=Build\Release
+OUTD=build/Release
 !endif
 !endif
 
-inc_dirs  = -Isrc\H -I$(WATCOM)\H
+inc_dirs  = -Isrc/H -I$(WATCOM)/h
 c_flags = -q -bc -bt=nt -3r -fpi87
 
 # -zc flag makes wcc386 place constant data in code segment.
 # used with wlink because it won't accept readonly attribute for segments
 !ifdef WLINK
-LINK = $(WATCOM)\binnt\wlink.exe
+LINK = $(WATCOM)/binnt/wlink.exe
 c_flags += -zc
 !else
-LINK = jwlink.exe
+LINK = jwlink
 !endif
 
 #cflags stuff
@@ -90,8 +90,8 @@ LOPTD = debug c op cvp, symfile lib user32.lib
 LOPTD =
 !endif
 
-CC=$(WATCOM)\binnt\wcc386 $(c_flags) $(inc_dirs) $(extra_c_flags) -fo$@
-LIB=$(WATCOM)\binnt\wlib
+CC=wcc386 $(c_flags) $(inc_dirs) $(extra_c_flags) -fo$@
+LIB=wlib
 
 {src}.c{$(OUTD)}.obj:
 	$(CC) $<
@@ -120,7 +120,7 @@ $(OUTD)/$(name).exe: $(OUTD)/main.obj $(proj_obj)
 $(LOPTD)
 format windows pe runtime console
 file { $(OUTD)/main.obj $(proj_obj) } name $@
-Libpath $(WATCOM)\lib386\nt;$(WATCOM)\lib386
+Libpath $(WATCOM)/lib386/nt:$(WATCOM)/lib386
 Library kernel32.lib
 op quiet, stack=0x40000, heapsize=0x100000, map=$^*, norelocs
 com stack=0x1000
@@ -149,13 +149,13 @@ format windows pe hx runtime console
 format windows pe runtime console
 !endif
 file { $(OUTD)/main.obj $(proj_obj) } name $@
-Libpath $(WATCOM)\lib386\nt;$(WATCOM)\lib386
-libpath $(HXDIR)\lib
-Libfile $(HXDIR)\Lib\InitW3OW.obj
+Libpath $(WATCOM)/lib386/nt;$(WATCOM)/lib386
+libpath $(HXDIR)/lib
+Libfile $(HXDIR)/Lib/InitW3OW.obj
 disable 1030
 Library imphlp.lib, dkrnl32s.lib, HXEmu387.lib
 reference EMUInit
-op quiet, stack=0x40000, heapsize=0x40000, map=$^*, stub=$(HXDIR)\Bin\loadpex.bin
+op quiet, stack=0x40000, heapsize=0x40000, map=$^*, stub=$(HXDIR)/Bin/loadpex.bin
 op statics
 !ifndef WLINK
 segment CONST readonly
@@ -163,23 +163,23 @@ segment CONST2 readonly
 !endif
 <<
 !ifdef WLINK
-#	$(HXDIR)\Bin\pestub.exe -x -z -n $@
+#	$(HXDIR)/Bin/pestub.exe -x -z -n $@
 	pestub.exe -x -z -n $@
 !endif
 
 #Libfile cstrtwhx.obj
 
 $(OUTD)/msgtext.obj: src/msgtext.c src/H/msgdef.h src/H/globals.h
-	$(CC) src\msgtext.c
+	$(CC) src/msgtext.c
 
 $(OUTD)/reswords.obj: src/reswords.c src/H/instruct.h src/H/special.h src/H/directve.h src/H/opndcls.h src/H/instravx.h
-	$(CC) src\reswords.c
+	$(CC) src/reswords.c
 
 ######
 
 clean: .SYMBOLIC
-	@if exist $(OUTD)\$(name).exe erase $(OUTD)\$(name).exe
-	@if exist $(OUTD)\$(name)d.exe erase $(OUTD)\$(name)d.exe
-	@if exist $(OUTD)\$(name).map erase $(OUTD)\$(name).map
-	@if exist $(OUTD)\$(name)d.map erase $(OUTD)\$(name)d.map
-	@if exist $(OUTD)\*.obj erase $(OUTD)\*.obj
+	@if exist $(OUTD)/$(name).exe erase $(OUTD)/$(name).exe
+	@if exist $(OUTD)/$(name)d.exe erase $(OUTD)/$(name)d.exe
+	@if exist $(OUTD)/$(name).map erase $(OUTD)/$(name).map
+	@if exist $(OUTD)/$(name)d.map erase $(OUTD)/$(name)d.map
+	@if exist $(OUTD)/*.obj erase $(OUTD)/*.obj
